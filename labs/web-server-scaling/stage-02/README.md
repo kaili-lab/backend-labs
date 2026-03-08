@@ -118,7 +118,7 @@ curl 'http://localhost:8080/experiments/thread-pool/batch?taskCount=6&delayMs=20
 
 ## 关联知识点
 这一阶段后续可以逐步关联到：
-- `docs/topics/并发武器库.md`
+- `docs/topics/Java并发与高性能编程/3-线程池与异步编程.md`
 - 线程池为什么是资源控制工具
 - 请求内并发和执行器之间的关系
 - 为什么不同任务不应长期混用同一个线程池

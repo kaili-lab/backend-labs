@@ -130,7 +130,8 @@ curl http://localhost:8080/products/1/details/concurrent
 
 ## 关联知识点
 这一阶段后续可以逐步关联到：
-- `docs/topics/并发武器库.md`
+- `docs/topics/Java并发与高性能编程/2-锁机制与线程.md`
+- `docs/topics/Java并发与高性能编程/3-线程池与异步编程.md`
 - Java 并发基础
 - 任务拆分与聚合
 - 请求内并发的适用条件
