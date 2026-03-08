@@ -5,12 +5,12 @@
 - Keep them concise, explicit, unambiguous, and easy to scan.
 
 ## Project Memory
-- At the start of work in this repo, read `PROJECT_MEMORY.md`.
+- At the start of work in this repo, read `项目记忆.md`.
 - Keep decisions, structure, and roadmap aligned with it.
-- Update `PROJECT_MEMORY.md` when the project's goals, structure, or major decisions change.
+- Update `项目记忆.md` when the project's goals, structure, or major decisions change.
 
 ## Required Reading
-- At the start of each new session in this repo, read `README.md`, `PROJECT_MEMORY.md`, and `docs/INDEX.md`.
+- At the start of each new session in this repo, read `README.md`, `项目记忆.md`, and `docs/文档索引.md`.
 - Before creating or updating docs, read the relevant `README.md` files in the related directories.
 - Keep new docs aligned with each file's stated responsibilities and non-responsibilities.
 

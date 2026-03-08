@@ -3,11 +3,35 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Java: stage-00",
-      "request": "launch",
-      "mainClass": "lab.backend.webserverscaling.stage00.WebServerScalingStage00Application",
-      "projectName": "web-server-scaling-stage-00",
-      "cwd": "${workspaceFolder}/labs/web-server-scaling/stage-00"
+      "name": "Debug: stage-00",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5004,
+      "preLaunchTask": "Maven: debug stage-00"
+    },
+    {
+      "type": "java",
+      "name": "Debug: stage-01",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005,
+      "preLaunchTask": "Maven: debug stage-01"
+    },
+    {
+      "type": "java",
+      "name": "Debug: stage-02",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5007,
+      "preLaunchTask": "Maven: debug stage-02"
+    },
+    {
+      "type": "java",
+      "name": "Debug: java-concurrency-lab",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5006,
+      "preLaunchTask": "Maven: debug java-concurrency-lab"
     }
   ]
 }

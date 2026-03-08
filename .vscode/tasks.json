@@ -2,17 +2,104 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Maven: run stage-00",
+      "label": "Maven: debug stage-00",
       "type": "shell",
-      "command": "./mvnw spring-boot:run",
+      "command": "./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5004'",
       "options": {
         "cwd": "${workspaceFolder}/labs/web-server-scaling/stage-00"
       },
-      "group": {
-        "kind": "build",
-        "isDefault": true
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": ".*",
+          "message": 0
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Listening for transport dt_socket at address: 5004"
+        }
       },
-      "problemMatcher": []
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Maven: debug stage-01",
+      "type": "shell",
+      "command": "./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005'",
+      "options": {
+        "cwd": "${workspaceFolder}/labs/web-server-scaling/stage-01"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": ".*",
+          "message": 0
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Listening for transport dt_socket at address: 5005"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Maven: debug stage-02",
+      "type": "shell",
+      "command": "./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5007'",
+      "options": {
+        "cwd": "${workspaceFolder}/labs/web-server-scaling/stage-02"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": ".*",
+          "message": 0
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Listening for transport dt_socket at address: 5007"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Maven: debug java-concurrency-lab",
+      "type": "shell",
+      "command": "./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006'",
+      "options": {
+        "cwd": "${workspaceFolder}/labs/independent-demos/java-concurrency-lab"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": ".*",
+          "message": 0
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Listening for transport dt_socket at address: 5006"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     },
     {
       "label": "Maven: test stage-00",
@@ -20,6 +107,36 @@
       "command": "./mvnw test",
       "options": {
         "cwd": "${workspaceFolder}/labs/web-server-scaling/stage-00"
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Maven: test stage-01",
+      "type": "shell",
+      "command": "./mvnw test",
+      "options": {
+        "cwd": "${workspaceFolder}/labs/web-server-scaling/stage-01"
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Maven: test java-concurrency-lab",
+      "type": "shell",
+      "command": "./mvnw test",
+      "options": {
+        "cwd": "${workspaceFolder}/labs/independent-demos/java-concurrency-lab"
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Maven: test stage-02",
+      "type": "shell",
+      "command": "./mvnw test",
+      "options": {
+        "cwd": "${workspaceFolder}/labs/web-server-scaling/stage-02"
       },
       "group": "test",
       "problemMatcher": []

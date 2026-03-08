@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: web-server-scaling-stage-01
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

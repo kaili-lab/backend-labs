@@ -24,14 +24,14 @@
 ```text
 backend-labs/
 ├── AGENTS.md
-├── PROJECT_MEMORY.md
+├── 项目记忆.md
 ├── README.md
-├── LEARNING_PATH.md
+├── 学习路径.md
 ├── docs/
 │   ├── roadmap/
 │   ├── topics/
 │   ├── resources/
-│   └── INDEX.md
+│   └── 文档索引.md
 └── labs/
     ├── web-server-scaling/
     │   ├── README.md
@@ -43,12 +43,12 @@ backend-labs/
 
 ## 各部分作用
 
-- `PROJECT_MEMORY.md`：记录项目长期记忆，包括目标、结构原则、当前决定和路线
-- `LEARNING_PATH.md`：记录建议学习顺序
+- `项目记忆.md`：记录项目长期记忆，包括目标、结构原则、当前决定和路线
+- `学习路径.md`：记录建议学习顺序
 - `docs/roadmap/`：记录系统从简单到复杂的演化主线
 - `docs/topics/`：记录可从主线跳转的知识点文档
-- `docs/resources/`：记录知识点的深入资料、参数说明和踩坑总结
-- `docs/INDEX.md`：作为文档总索引
+- `docs/resources/`：记录少量真正需要单独展开的深入资料
+- `docs/文档索引.md`：作为文档总索引
 - `labs/web-server-scaling/`：主实验项目，按阶段演示系统演化
 - `labs/independent-demos/`：独立的小型实验，用来观察某个局部机制
 
@@ -107,5 +107,5 @@ backend-labs/
 
 ## 当前建议
 
-先从 `docs/roadmap/web-server-scaling.md` 开始，把第一批阶段定义清楚。
-再根据主线中出现的问题，逐步补充 `docs/topics/`、`docs/resources/` 和 `labs/`。
+先从 `docs/roadmap/服务扩展演进路线.md` 开始，把第一批阶段定义清楚。
+再根据主线中出现的问题，优先补充 `docs/topics/` 中的主文档和 `labs/` 中的实验项目。

@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: java-concurrency-lab
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
