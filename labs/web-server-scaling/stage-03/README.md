@@ -114,7 +114,8 @@ curl 'http://localhost:8080/experiments/database/repeated-read?productId=1&times
 
 ## 关联知识点
 这一阶段后续可以逐步关联到：
-- `docs/topics/数据库压力.md`
+- `docs/java-topics/性能优化/3-数据库性能优化.md`
+- `docs/java-topics/系统设计/2-数据库与缓存设计.md`
 - 数据库连接为什么也是资源
 - ORM 提升开发效率的同时，会把哪些细节先隐藏起来
 - 为什么数据库问题常常要到真实压力出现后才更容易暴露

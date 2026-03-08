@@ -30,7 +30,7 @@ backend-labs/
 ├── 学习路径.md
 ├── docs/
 │   ├── roadmap/
-│   └── topics/
+│   └── java-topics/
 ├── labs/
 │   ├── web-server-scaling/
 │   │   ├── README.md
@@ -46,7 +46,7 @@ backend-labs/
 - `项目记忆.md`：记录项目长期记忆，包括目标、结构原则、当前决定和路线
 - `学习路径.md`：记录建议学习顺序
 - `docs/roadmap/`：记录系统从简单到复杂的演化主线
-- `docs/topics/`：记录你围绕专题整理的知识文档
+- `docs/java-topics/`：记录你围绕专题整理的知识文档
 - `labs/web-server-scaling/`：主实验项目，按阶段演示系统演化
 - `labs/independent-demos/`：独立的小型实验，用来观察某个局部机制
 - `references/`：你过去整理的知识体系与检查清单，作为后续专题整理时的参考材料
@@ -65,7 +65,7 @@ backend-labs/
 它的重点是**串联演化过程**，不是展开解释所有技术细节。
 所以主线文档更像“剧情线”或“路线图”。
 
-### 2. 专题文档：`docs/topics/`
+### 2. 专题文档：`docs/java-topics/`
 专题文档负责回答：
 - 某个专题内部有哪些核心知识点
 - 当前 stage 用到了这个专题中的哪一部分
@@ -89,11 +89,11 @@ backend-labs/
 ## 怎么判断内容该放哪里
 
 - 如果你在讲“系统为什么演化到这一步” -> 放 `docs/roadmap/`
-- 如果你在整理“某个专题本身的知识结构” -> 放 `docs/topics/`
+- 如果你在整理“某个专题本身的知识结构” -> 放 `docs/java-topics/`
 - 如果你在讲“代码跑起来会发生什么” -> 放 `labs/`
 - 如果你在回看过去已有的知识提纲或检查清单 -> 看 `references/`
 
 ## 当前建议
 
 先从 `docs/roadmap/服务扩展演进路线.md` 开始，把主线继续推进。
-然后围绕当前 stage 真实涉及到的专题，到 `docs/topics/` 下由你自己整理知识结构与思考。
+然后围绕当前 stage 真实涉及到的专题，到 `docs/java-topics/` 下由你自己整理知识结构与思考。
