@@ -27,6 +27,14 @@
     },
     {
       "type": "java",
+      "name": "Debug: stage-03",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5008,
+      "preLaunchTask": "Maven: debug stage-03"
+    },
+    {
+      "type": "java",
       "name": "Debug: java-concurrency-lab",
       "request": "attach",
       "hostName": "localhost",
