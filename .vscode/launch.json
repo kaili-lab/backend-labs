@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Java: stage-00",
+      "request": "launch",
+      "mainClass": "lab.backend.webserverscaling.stage00.WebServerScalingStage00Application",
+      "projectName": "web-server-scaling-stage-00",
+      "cwd": "${workspaceFolder}/labs/web-server-scaling/stage-00"
+    }
+  ]
+}

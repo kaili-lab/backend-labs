@@ -4,7 +4,7 @@
 这份文档用于明确 `labs/web-server-scaling/` 主实验的基础技术栈，减少后续搭建时的反复讨论。
 
 ## 版本说明
-本文中的具体版本结论，基于 `2026-03-07` 当天的官方信息。
+本文中的具体版本结论，基于 `2026-03-08` 当天的官方信息。
 后续如果项目真正开始搭建的时间已经明显晚于这个日期，应先重新核对官方文档，再决定是否继续沿用当前版本。
 
 当前文档的作用是：
@@ -13,9 +13,9 @@
 - 为后续实际搭建提供默认参考
 
 ## 当前结论
-主实验采用以下基线方案：
-- `JDK 25`
-- `Spring Boot 4.0.x`
+考虑到这个项目的目标是长期学习 Advanced Java 后端开发，并且不希望过度纠结版本细节，主实验采用以下基线方案：
+- `JDK 21`
+- `Spring Boot 3.5.x`
 - `Maven 3.9.x`
 - `PostgreSQL 17`
 - `Spring Data JPA + Hibernate`
@@ -23,36 +23,40 @@
 - `Docker Compose`
 - `Kafka` 暂定为后续阶段候选，不进入初始阶段
 
+## 为什么采用这套基线
+这套版本组合的重点不是“最新”，而是“稳定、主流、资料多、长期维护成本低”。
+对于一个以学习后端演进思路为主、而不是追新版本特性为主的项目来说，这样更合适。
+
 ## 各项选择说明
 
-### 1. JDK：`JDK 25`
-截至 2026-03-07，`JDK 25` 是最近一个已经发布的 LTS 版本。
-对于一个从零开始的新项目，它比 `JDK 21` 更适合作为当前主实验基线。
+### 1. JDK：`JDK 21`
+`JDK 21` 是长期支持版本（LTS），并且已经成为当前 Java 生态里非常主流的学习和生产基线。
 
 选择它的原因：
-- 是当前较新的长期支持版本
-- 适合作为未来一段时间的稳定基线
-- 与当前 Spring Boot 官方兼容范围匹配
+- 是稳定的长期支持版本
+- 相比 `JDK 25` 更贴近当前大量实际项目环境
+- 对这个项目来说已经足够现代，不会限制主线学习
+- 更利于后面同时加入 Node.js 模块时保持主线稳定
 
-### 2. 框架：`Spring Boot 4.0.x`
-截至 2026-03-07，Spring Boot 官方文档显示当前稳定版为 `4.0.3`。
-因此主实验不再从 `Spring Boot 3` 起步，而是直接使用 `Spring Boot 4.0.x`。
+## 2. 框架：`Spring Boot 3.5.x`
+截至 `2026-03-08`，Spring 官方已经发布 `Spring Boot 3.5.11`，因此主实验采用 `Spring Boot 3.5.x` 作为当前基线。
 
 选择它的原因：
-- 是当前新的主线版本
-- 适合新项目直接采用
-- 与现代 Java 版本和 Spring Framework 7 生态保持一致
+- `3.5` 是 `3.x` 这一代的最后一个 minor version
+- 更贴近当前国际 Java 市场中大量项目的实际环境
+- 按 Spring 官方支持策略，像 `3.5` 这样的最后一个 minor version 会有更长的企业支持周期
+- 比起直接使用 `Spring Boot 4`，更适合当前这个长期学习项目作为主线基线
 
-### 3. 构建工具：`Maven 3.9.x`
-虽然 Spring Boot 4 只要求 `Maven 3.6.3+`，但当前 Maven 官方稳定发布版本已经是 `3.9.13`。
-因此主实验推荐直接使用 `Maven 3.9.x`。
+## 3. 构建工具：`Maven 3.9.x`
+截至 `2026-03-08`，Apache Maven 官方下载页显示当前稳定版为 `3.9.12`。
+因此主实验推荐使用 `Maven 3.9.x`，默认可以采用 `3.9.12`。
 
 选择它的原因：
 - Spring 生态中依然非常主流
 - 配置和依赖管理更容易被多数 Java 开发者理解
 - 对这个学习项目来说，额外变量更少
 
-### 4. 数据库：`PostgreSQL 17`
+## 4. 数据库：`PostgreSQL 17`
 数据库类型选择 `PostgreSQL`。
 虽然 PostgreSQL 官方当前文档页已经显示 `18` 是 current，但本项目作为学习主实验，更推荐把数据库基线放在 `17`。
 
@@ -61,7 +65,7 @@
 - 适合后续演示索引、事务、锁、查询优化、读写压力等主题
 - 使用 `17` 可以减少“所有组件都追最新”带来的额外变量
 
-### 5. 数据访问层：`Spring Data JPA + Hibernate`
+## 5. 数据访问层：`Spring Data JPA + Hibernate`
 当前主实验默认使用：
 - 规范层：Jakarta Persistence
 - ORM 实现：Hibernate
@@ -76,7 +80,7 @@
 - 这不是说后续所有阶段都只能用 ORM
 - 当主线进入数据库压力、SQL 优化、查询控制等阶段时，可以按需要引入 `JdbcTemplate`、原生 SQL，甚至后续再讨论 `jOOQ`
 
-### 6. 数据库迁移：`Flyway`
+## 6. 数据库迁移：`Flyway`
 只要主实验开始接入数据库，就应该把 schema 变更纳入版本控制。
 因此推荐从数据库正式进入主线开始使用 `Flyway`。
 
@@ -85,7 +89,7 @@
 - 很适合这个“系统一步步演进”的学习主题
 - 能减少手工改库带来的混乱
 
-### 7. 外部依赖管理：`Docker Compose`
+## 7. 外部依赖管理：`Docker Compose`
 数据库、Redis、消息队列等外部依赖统一通过 `Docker Compose` 管理。
 
 这样选择的原因：
@@ -93,7 +97,7 @@
 - 更容易重建、回滚和共享环境
 - 有利于把注意力放在系统演化，而不是本地环境维护
 
-### 8. 消息队列：`Kafka` 暂不提前接入
+## 8. 消息队列：`Kafka` 暂不提前接入
 消息队列在本项目中是重要主题，但当前不应该过早进入主实验。
 
 当前决定是：
@@ -103,6 +107,7 @@
 ## 当前不建议的做法
 - 不建议一开始就同时支持多套 Java Web 框架
 - 不建议一开始就把 PostgreSQL、Redis、Kafka 全部接入
+- 不建议为了追新而直接把主线切到 `JDK 25 + Spring Boot 4`
 - 不建议把 ORM 固定成唯一长期方案，后续应允许按问题演进
 
 ## 后续还需要继续确认的内容
@@ -112,6 +117,8 @@
 - Kafka 在主线中对应的引入时机
 
 ## 官方核对入口
-- Spring Boot System Requirements：`https://docs.spring.io/spring-boot/system-requirements.html`
+- Spring Boot 3.5.11 发布说明：`https://spring.io/blog/2026/02/19/spring-boot-3-5-11-available-now`
+- Spring Support Policy：`https://spring.io/support-policy`
+- Spring Support Policy Updates：`https://spring.io/blog/2025/02/13/support-policy-updates`
 - Oracle Java SE Support Roadmap：`https://www.oracle.com/java/technologies/java-se-support-roadmap.html`
 - Apache Maven Download：`https://maven.apache.org/download.cgi`
