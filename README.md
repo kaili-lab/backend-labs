@@ -35,13 +35,9 @@ backend-labs/
 │   ├── capability-map/
 │   └── java-topics/
 ├── labs/
-│   ├── web-server-scaling/     # 模块化单体商城项目
-│   │   ├── mall-app/
-│   │   ├── mall-order/
-│   │   ├── mall-inventory/
-│   │   ├── mall-payment/
-│   │   ├── mall-notification/
-│   │   └── mall-common/
+│   ├── web-server-scaling/     # 主实验主题：单体 + 微服务拆分
+│   │   ├── mall-monolith/
+│   │   └── mall-microservices/
 │   └── independent-demos/
 └── references/
 ```
@@ -55,7 +51,7 @@ backend-labs/
 - `docs/roadmap/`：记录系统从简单到复杂的演化主线
 - `docs/capability-map/`：记录后端工程能力的高层地图
 - `docs/java-topics/`：记录你围绕专题整理的知识文档
-- `labs/web-server-scaling/`：主实验项目，模块化单体商城，配合演进线逐步迭代
+- `labs/web-server-scaling/`：主实验主题，后续包含 Spring Boot 模块化单体项目和基于它拆分的 Spring Cloud 微服务项目
 - `labs/independent-demos/`：独立的小型实验，用来观察某个局部机制
 - `references/`：你过去整理的知识体系与检查清单，作为后续专题整理时的参考材料
 

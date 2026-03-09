@@ -1,196 +1,419 @@
-# 模块化单体商城项目 — Stage 1 设计文档
+# Spring Boot 模块化单体主实验设计文档
 
 ## 背景
 
-项目需要一个代码实验来配合已有的后端演进线文档（`docs/capability-map/后端演进线.md`）。
+原方案是按演进线的每个阶段创建独立项目，逐步把一个小系统演化成复杂系统。
 
-原方案是每个演进阶段创建独立项目（stage-00 ~ stage-03），经讨论调整为：**一个模块化单体项目，逐步迭代，覆盖整条演进线的关键能力点。**
+现在已经明确调整为：
+- `web-server-scaling` 不再创建多个 stage 项目
+- `web-server-scaling` 主题下后续包含两个代码项目
+- 第一个项目是 **Spring Boot 模块化单体项目**
+- 第二个项目是基于这个单体项目拆出来的 **Spring Cloud 微服务项目**
 
-本次只实现 **Stage 1（全同步模型）**，目标是：搭好项目骨架，跑通一条完整的下单链路。
+因此，这份 PRD 不再描述某个单独 stage，而是：
+**`web-server-scaling` 主题下第一个子项目，也就是 Spring Boot 模块化单体项目的设计文档。**
+
+需要特别说明：
+- `docs/capability-map/后端演进线.md` 仍然负责解释“这些能力为什么会出现”
+- 但这条演进线不再等价于“代码要按 10 多个阶段一个个新建项目”
+
+换句话说：
+- 演进线是**知识解释顺序**
+- 单体项目是**第一阶段的能力集中承载载体**
+- 微服务项目是**第二阶段的服务边界与分布式问题承载载体**
 
 ---
 
-## 关键设计决策
+## 项目定位
 
-### 1. Maven 多模块（而非单模块包分离）
+### 这个主实验要解决什么问题
 
-理由：
-- 模块边界在编译期强制执行——order 模块如果没有声明对 inventory 的 Maven 依赖，就无法 import inventory 的类
-- 到阶段 10 拆服务时，每个模块已经是独立 artifact，迁移成本低
+这个主实验的目标不是做一个“最小起步 demo”，而是做一个：
 
-### 2. 独立的 mall-app 启动模块
+- 业务语境清晰
+- 模块边界明确
+- 能同时承载事务、异步、线程池、缓存、稳定性、可观测性等能力
+- 但又不提前引入微服务分布式复杂度
 
-理由：
-- 业务模块保持纯库模块，不含 Spring Boot 打包逻辑
-- mall-app 负责主类、配置文件、Docker Compose
-- 依赖方向清晰：mall-app 依赖 mall-order，通过传递依赖获得其他所有模块
+的 Spring Boot 模块化单体项目。
 
-### 3. 模块间通过 Spring 依赖注入直接调用
+### 当前单体项目的异步边界
 
-理由：
-- Stage 1 最简做法：mall-order 声明对 mall-inventory/mall-payment/mall-notification 的 Maven 依赖，直接注入 Service 接口
-- 不需要额外的 API 模块，后续阶段 10 拆分时再抽接口模块
+这份 PRD 对附属异步流程采用如下边界：
+- 支付成功后的通知，不阻塞核心写链路
+- 通知任务先写入业务化任务表，再由调度器和线程池异步执行
+- 当前不引入 `Kafka`
+- 当前也不引入通用 `outbox`
 
-### 4. Flyway 迁移脚本统一放在 mall-app
+这样设计的原因是：
+- 先把单体里的事务边界、异步任务、重试和多实例领取问题讲清楚
+- 避免单体项目同时承担缓存、数据库、消息总线三种以上复杂度
+- 把 `Kafka` 和事件总线放到后续微服务项目，更容易和服务边界一起观察
 
-理由：
-- 所有 `.sql` 放在 `mall-app/src/main/resources/db/migration/`，用顺序版本号（V1、V2、V3...）
-- 表名用前缀区分模块归属（`prd_`、`inv_`、`ord_`、`pay_`）
-- 这是最简单的方式，避免多 location 版本号冲突
+### 这个主实验不解决什么问题
 
-### 5. 跨模块不建数据库外键
+这份 PRD 不处理以下问题：
+- Kafka / 通用事件总线 / `outbox`
+- 服务注册与发现
+- 服务间远程调用治理
+- 网关
+- 分布式事务 / Saga
+- 配置中心
+- 跨服务链路追踪
+- 因独立部署带来的服务协调问题
 
-理由：
-- 模块之间通过业务标识（product_id、order_no）关联
-- 为后续服务拆分保留独立性——拆分后不同模块可能在不同数据库
+这些内容后续进入同一主题下的第二个项目，也就是 Spring Cloud 微服务项目，不塞进当前这个单体项目。
 
-### 6. 下单和支付分离
+---
 
-理由：
-- 创建订单后状态为 `CREATED`（待支付），不立即变 `PAID`
-- 支付通过独立的确认接口完成，模拟支付回调
-- 即使 Stage 1 还是同步模拟，流程和 API 上已经分开，为后续引入支付回调、异步化、MQ、最终一致性保留自然的演进边界
+## 项目目标
 
-### 7. 商品信息和库存暂时同属 mall-inventory 模块
+### 业务目标
 
-理由：
-- Stage 1 不单独建 mall-product 模块，避免过度拆分
-- 但在数据库表层面已经分开：`prd_product`（商品信息）和 `inv_inventory`（库存数量），通过 product_id 关联
-- 后续如需单独演进商品读路径（缓存、热点），再拆模块，成本很低
+使用商城语境，围绕以下主链路建立一个可持续扩展的后端实验项目：
+- 商品读取
+- 下单
+- 扣库存
+- 创建支付记录
+- 确认支付
+- 发送通知
+
+### 能力目标
+
+这个主实验应集中覆盖以下能力：
+- 请求链路与应用执行
+- 参数校验与统一异常翻译
+- 数据库建模、事务边界和状态流转
+- 异步化
+- 线程池、后台任务与任务编排
+- PostgreSQL 使用与典型优化入口
+- Redis 缓存
+- 一致性与状态同步
+- 稳定性治理
+- 可观测性
+- 多实例友好设计
+
+### 实施原则
+
+- 能力目标一次定义清楚
+- 代码实现可以按依赖关系推进
+- 但不再把能力拆成多个 stage 项目分别实现
+
+---
+
+## 原演进阶段与当前主实验的映射
+
+下面这张表保留原演进线的视角，但它现在表达的是“知识点在当前项目里的落位”，不是“代码实施顺序”。
+
+| 原演进阶段 | 当前在主实验中的落位 |
+|-----------|----------------------|
+| 阶段 1：同步模型 | 订单、库存、支付的核心同步写链路 |
+| 阶段 2：异步化 | 通知和后台任务从主链路拆出 |
+| 阶段 3：线程池 | 统一的异步任务执行器与后台任务调度 |
+| 阶段 4：性能优化 | 连接池、分页、索引、慢 SQL 观察 |
+| 阶段 5：数据库优化 | 表结构设计、事务边界、索引与读写路径治理 |
+| 阶段 6：缓存 | Redis 缓存热点商品和读路径数据 |
+| 阶段 7：一致性 | 订单、支付、缓存、通知任务之间的状态同步 |
+| 阶段 8：稳定性 | 超时、重试、熔断、限流、降级 |
+| 阶段 9：MQ 解耦 | 不在当前单体 PRD 中实现，后续进入 Spring Cloud 微服务项目 |
+| 阶段 10：服务拆分 | 在同一主题下转入后续 Spring Cloud 微服务项目 |
+| 阶段 11：可观测性 | 日志、健康检查、指标、链路追踪入口 |
+
+---
+
+## 设计原则
+
+### 1. 模块化单体，不是伪微服务
+
+- 当前项目是单应用启动
+- 模块边界在编译期和包结构上明确
+- 但不引入远程调用、服务注册、网关等分布式复杂度
+
+### 2. 演进线用于解释，不用于拆项目
+
+- 文档继续保留“为什么出现线程池、缓存、消息驱动”这条因果线
+- 代码则只实现当前单体项目需要承载的那部分能力
+
+### 3. 业务模块边界要真实存在
+
+- 订单、库存、支付、通知按真实业务边界拆分模块
+- 模块之间通过接口调用，不直接访问彼此的数据库表
+
+### 4. 跨模块关联用业务标识，不用跨模块外键
+
+- 订单、库存、支付之间通过 `product_id`、`order_no` 等业务标识关联
+- 跨模块不建数据库外键
+- 模块内部允许保留必要外键，例如 `ord_order_item -> ord_order`
+
+### 5. 核心写链路保持事务清晰，附属流程尽量异步化
+
+- 下单、支付确认这类核心状态变化必须先定义清楚事务边界
+- 通知、后台处理这类附属流程应从主链路中剥离
+
+### 6. 单体里的异步先用任务表 + 调度 / 线程池
+
+- 支付成功后，先在事务内创建通知任务
+- 调度器负责领取待执行任务
+- 线程池负责真正执行通知
+- 当前不提前引入 `Kafka / outbox`
+
+### 7. 先把单体能力用深，再基于它拆出微服务项目
+
+- 线程池、缓存、事务、一致性、稳定性、可观测性都可以在单体项目里演示
+- 不为了“展示高级架构”而提前拆成微服务
+
+---
+
+## 技术栈与基础设施
+
+### 技术栈基线
+
+- `JDK 21`
+- `Spring Boot 3.5.11`
+- `Maven 3.9.x`
+- `Spring MVC`
+- `Spring Data JPA + Hibernate`
+- `Flyway`
+- `Spring Boot Actuator`
+- `Micrometer`
+
+### 基础设施
+
+当前主实验通过 Docker Compose 统一管理：
+- `PostgreSQL 17`
+- `Redis`
+
+说明：
+- PostgreSQL 承担主业务数据存储和通知任务持久化
+- Redis 承担热点读路径缓存，以及后续可能的幂等 / 限流辅助能力
+- 当前单体项目不包含 `Kafka`
+- 当前单体项目也不包含通用 `outbox`
 
 ---
 
 ## 项目结构
 
-```
+```text
 web-server-scaling/
-├── pom.xml                     # 父 POM
-├── mall-common/                # 通用模块：异常、响应体
+├── README.md
+├── PRD.md
+├── mall-monolith/              # 当前这个 PRD 描述的 Spring Boot 单体项目
 │   ├── pom.xml
-│   └── src/main/java/lab/backend/mall/common/
-├── mall-inventory/             # 库存模块（Stage 1 暂含商品信息）
-│   ├── pom.xml
-│   └── src/main/java/lab/backend/mall/inventory/
-├── mall-payment/               # 支付模块
-│   ├── pom.xml
-│   └── src/main/java/lab/backend/mall/payment/
-├── mall-notification/          # 通知模块
-│   ├── pom.xml
-│   └── src/main/java/lab/backend/mall/notification/
-├── mall-order/                 # 订单模块
-│   ├── pom.xml
-│   └── src/main/java/lab/backend/mall/order/
-├── mall-app/                   # 启动模块
-│   ├── pom.xml
-│   ├── docker-compose.yml
-│   └── src/
-│       ├── main/
-│       │   ├── java/lab/backend/mall/MallApplication.java
-│       │   └── resources/
-│       │       ├── application.yml
-│       │       └── db/migration/   # Flyway 迁移脚本
-│       └── test/                   # 集成测试
-├── PRD.md                      # 本文件
-└── README.md                   # 已有
+│   ├── mall-common/
+│   ├── mall-inventory/
+│   ├── mall-order/
+│   ├── mall-payment/
+│   ├── mall-notification/
+│   └── mall-app/
+└── mall-microservices/         # 后续基于单体拆分出来的 Spring Cloud 项目
 ```
+
+### 目录职责
+
+```text
+mall-monolith/mall-app/
+├── src/main/java/lab/backend/mall/
+│   ├── MallApplication.java
+│   ├── config/                 # 线程池、缓存、调度、稳定性、观测配置
+│   ├── facade/                 # 跨模块用例编排
+│   └── controller/             # 非单一领域控制器入口
+├── src/main/resources/
+│   ├── application.yml
+│   └── db/migration/
+├── src/test/
+│   ├── java/
+│   └── resources/
+└── docker/
+    └── postgres/init/
+```
+
+---
+
+## 模块职责、能力映射与注释重点
+
+| 模块 | 当前主要职责 | 对应能力 / 解决的问题 | 在代码中要重点解释什么 |
+|------|--------------|-----------------------|------------------------|
+| `mall-common` | 提供 `ApiResponse`、`BusinessException`、统一异常翻译、公共校验支持 | 请求链路与应用执行；解决“Web 边界处理不要在每个模块重复写” | 说明什么属于横切能力，为什么业务规则不能下沉到 common |
+| `mall-inventory` | 管理商品信息读取、库存校验、库存扣减；承载商品读路径缓存 | 数据与状态管理、缓存、并发控制入口；解决“订单链路依赖商品价格和库存状态” | 说明为什么商品信息和库存数量分表；说明哪些数据走缓存、哪些必须回源数据库 |
+| `mall-order` | 创建订单、保存订单快照、查询订单、分页列表、订单状态流转 | 数据与状态管理、事务边界、数据库优化；解决“主写链路如何稳定落库” | 说明为什么订单必须保存商品快照；说明事务边界为什么放在订单用例上 |
+| `mall-payment` | 管理支付记录、支付状态变化、支付确认幂等；对外模拟支付回调入口语义 | 数据与状态管理、一致性、稳定性；解决“支付状态为什么不能和订单状态混为一体” | 说明支付状态独立存在的原因；说明幂等、防重复确认的业务含义 |
+| `mall-notification` | 承担支付成功后的附属动作；通过通知任务表、定时扫描和线程池执行通知 | 异步化、线程池、后台任务、重试；解决“为什么通知不应该阻塞核心链路” | 说明为什么任务要先落库再异步执行；说明多实例下为什么要避免重复领取 |
+| `mall-app` | 提供启动、装配、配置、观察、测试，以及跨模块 facade 和调度入口 | 请求链路与应用执行、稳定性、可观测性、架构取舍；解决“谁持有跨模块事务和基础设施配置” | 说明为什么 facade 放在 app；说明配置层与业务层的边界 |
 
 ---
 
 ## 模块依赖关系
 
-```
+```text
 mall-app
-  └── mall-order
-        ├── mall-inventory → mall-common
-        ├── mall-payment → mall-common
-        ├── mall-notification → mall-common
-        └── mall-common
+  ├── mall-common
+  ├── mall-inventory
+  ├── mall-order
+  ├── mall-payment
+  └── mall-notification
+
+mall-order
+  ├── mall-common
+  ├── mall-inventory
+  └── mall-payment
+
+mall-inventory
+  └── mall-common
+
+mall-payment
+  └── mall-common
+
+mall-notification
+  └── mall-common
 ```
 
-mall-app 只显式依赖 mall-order，其余模块通过传递依赖获得。
+### 依赖约束
 
-**关键约束：mall-inventory、mall-payment、mall-notification 三者互不依赖。只有 mall-order 依赖它们。**
+- 业务模块之间不形成环依赖
+- `mall-order` 可以依赖库存、支付接口，因为它承载核心写链路编排
+- `mall-payment`、`mall-inventory`、`mall-notification` 彼此不直接依赖
+- `mall-app` 作为应用装配层可以依赖多个业务模块，但不承载具体领域规则
 
 ---
 
-## Maven 依赖分配
+## 关键能力的落位方式
 
-| 模块 | 引入的 starter / 依赖 |
-|------|----------------------|
-| 父 POM | `spring-boot-starter-parent:3.5.11`, java 21, 内部模块版本管理 |
-| mall-common | `spring-boot-starter-web`, `spring-boot-starter-data-jpa`, `spring-boot-starter-validation` |
-| mall-inventory | mall-common |
-| mall-payment | mall-common |
-| mall-notification | mall-common |
-| mall-order | mall-common, mall-inventory, mall-payment, mall-notification |
-| mall-app | mall-order（传递引入其他所有模块）, `postgresql`, `flyway-core`, `flyway-database-postgresql`, `spring-boot-starter-actuator`, `spring-boot-starter-test`(test scope), `spring-boot-maven-plugin` |
-
-说明：`spring-boot-starter-web` 和 `spring-boot-starter-data-jpa` 放在 mall-common，所有业务模块通过依赖 mall-common 获得。
-
----
-
-## 包结构
-
-```
-lab.backend.mall.common
-    ├── exception/              # BusinessException
-    └── model/                  # ApiResponse<T>
-
-lab.backend.mall.inventory
-    ├── entity/                 # ProductEntity, InventoryEntity
-    ├── repository/             # ProductRepository, InventoryRepository
-    ├── service/                # InventoryService（接口）, InventoryServiceImpl
-    ├── dto/                    # ProductInfo
-    └── controller/             # InventoryController
-
-lab.backend.mall.payment
-    ├── entity/                 # PaymentEntity
-    ├── repository/             # PaymentRepository
-    ├── service/                # PaymentService（接口）, PaymentServiceImpl
-    └── dto/                    # PaymentResult
-
-lab.backend.mall.notification
-    └── service/                # NotificationService（接口）, NotificationServiceImpl
-
-lab.backend.mall.order
-    ├── entity/                 # OrderEntity, OrderItemEntity
-    ├── repository/             # OrderRepository, OrderItemRepository
-    ├── service/                # OrderService（接口）, OrderServiceImpl
-    ├── dto/                    # CreateOrderRequest, OrderResponse
-    └── controller/             # OrderController
-
-lab.backend.mall                # mall-app 模块
-    ├── MallApplication.java    # @SpringBootApplication(scanBasePackages = "lab.backend.mall")
-    ├── facade/                 # PaymentFacade（跨模块用例编排，持有事务）
-    └── controller/             # PaymentController（支付确认入口）
-```
+| 能力点 | 当前方案 | 主要落位 |
+|--------|----------|----------|
+| 请求链路 | `Controller -> Facade / Service -> Repository` | `mall-app`、各业务模块 |
+| 参数校验 | `jakarta.validation` + `@Valid` | DTO、Controller |
+| 统一异常 | `BusinessException` + `GlobalExceptionHandler` | `mall-common` |
+| 事务 | 本地事务，清晰标注用例边界 | `OrderService`、`PaymentFacade` |
+| 异步化 | 非核心附属流程从主链路剥离 | `mall-notification`、`mall-app` |
+| 线程池 | 独立执行器，区分通知执行和后台任务 | `mall-app/config` |
+| 后台任务 | 基于任务表 + 定时扫描 + 任务领取 | `mall-notification`、`mall-app` |
+| 缓存 | Redis Cache Aside，用于商品和热点读路径 | `mall-inventory` |
+| 一致性 | 通过事务边界 + 通知任务落库衔接核心链路和附属动作 | `mall-order`、`mall-payment`、`mall-notification` |
+| 稳定性 | 超时、重试、熔断、限流落在外部适配层 | `mall-app/config`、外部适配器 |
+| 可观测性 | 结构化日志、Actuator、Micrometer、trace 入口 | `mall-app` |
+| 多实例友好 | 应用无状态化，任务领取避免重复消费 | 整体设计约束 |
 
 ---
 
-## 数据库表设计
+## 关键业务流程
 
-### prd_product（商品信息，暂放 mall-inventory 模块）
+### 1. 商品读取与缓存
+
+```text
+GET /api/inventory/{productId}
+  → InventoryController
+    → InventoryService.getProductInfo()
+      → 先查 Redis
+      → miss 时回源 PostgreSQL
+      → 回填缓存
+```
+
+这个流程主要用于承载：
+- 商品读路径
+- Redis 缓存
+- 热点数据观察
+- 后续缓存一致性讨论
+
+### 2. 创建订单
+
+```text
+POST /api/orders
+  → OrderController
+    → OrderService.createOrder()
+      → 查商品信息
+      → 校验库存
+      → 扣减库存
+      → 保存 Order + OrderItems
+      → 创建 PaymentRecord（PENDING）
+      → 返回 CREATED 状态订单
+```
+
+`OrderService.createOrder()` 整体在一个 `@Transactional` 内执行，保证：
+- 库存扣减
+- 订单写入
+- 支付记录创建
+
+要么一起成功，要么一起回滚。
+
+这个流程主要用于承载：
+- 同步主写链路
+- 本地事务
+- 订单快照
+- 写路径状态变化
+
+### 3. 确认支付
+
+```text
+POST /api/payments/{orderNo}/confirm
+  → PaymentController
+    → PaymentFacade.confirmPayment()
+      → paymentService.confirmPayment(orderNo)
+      → orderService.markAsPaid(orderNo)
+      → notificationTaskService.enqueueOrderPaidNotification(orderNo)
+      → 返回 SUCCESS
+```
+
+`PaymentFacade.confirmPayment()` 持有 `@Transactional`，用于保证：
+- 支付状态更新
+- 订单状态更新
+- 通知任务创建
+
+在同一事务内完成。
+
+这个流程主要用于承载：
+- 支付状态与订单状态分离
+- 幂等确认
+- 一致性边界
+- 附属异步流程的任务化切分
+
+### 4. 支付成功后的异步通知
+
+```text
+NotificationTaskScheduler 定时扫描待执行任务
+  → 领取任务（避免多实例重复领取）
+    → 提交到 notificationExecutor
+      → NotificationService.sendOrderConfirmation()
+      → 成功时更新任务状态为 SUCCESS
+      → 失败时递增 retry_count 并设置 next_retry_at
+```
+
+这个流程主要用于承载：
+- 异步化
+- 线程池执行
+- 任务持久化
+- 失败重试
+- 多实例领取控制
+
+---
+
+## 数据模型
+
+### prd_product
 
 | 列 | 类型 | 说明 |
 |----|------|------|
-| id | BIGSERIAL PK | |
+| id | BIGSERIAL PK | 内部主键 |
 | product_id | BIGINT UNIQUE NOT NULL | 商品业务标识 |
 | name | VARCHAR(200) NOT NULL | 商品名 |
 | price | DECIMAL(10,2) NOT NULL | 单价 |
 | created_at | TIMESTAMP NOT NULL | |
 | updated_at | TIMESTAMP NOT NULL | |
 
-### inv_inventory（库存数量）
+说明：
+- 跨模块关联统一使用 `product_id`
+- `id` 只作为表内部主键使用
+
+### inv_inventory
 
 | 列 | 类型 | 说明 |
 |----|------|------|
 | id | BIGSERIAL PK | |
-| product_id | BIGINT UNIQUE NOT NULL | 关联商品 |
+| product_id | BIGINT UNIQUE NOT NULL | 关联商品业务标识 |
 | stock | INT NOT NULL DEFAULT 0 | 可用库存 |
 | created_at | TIMESTAMP NOT NULL | |
 | updated_at | TIMESTAMP NOT NULL | |
 
-### ord_order（订单）
+### ord_order
 
 | 列 | 类型 | 说明 |
 |----|------|------|
@@ -201,270 +424,161 @@ lab.backend.mall                # mall-app 模块
 | created_at | TIMESTAMP NOT NULL | |
 | updated_at | TIMESTAMP NOT NULL | |
 
-### ord_order_item（订单明细）
+### ord_order_item
 
 | 列 | 类型 | 说明 |
 |----|------|------|
 | id | BIGSERIAL PK | |
-| order_id | BIGINT NOT NULL FK → ord_order.id | |
-| product_id | BIGINT NOT NULL | |
+| order_id | BIGINT NOT NULL FK → ord_order.id | 模块内允许外键 |
+| product_id | BIGINT NOT NULL | 商品业务标识 |
 | product_name | VARCHAR(200) NOT NULL | 下单时快照 |
 | quantity | INT NOT NULL | |
 | unit_price | DECIMAL(10,2) NOT NULL | 下单时快照 |
 | created_at | TIMESTAMP NOT NULL | |
 
-### pay_payment（支付记录）
+### pay_payment
 
 | 列 | 类型 | 说明 |
 |----|------|------|
 | id | BIGSERIAL PK | |
-| order_no | VARCHAR(32) NOT NULL | 关联订单号（跨模块不建 FK） |
+| order_no | VARCHAR(32) NOT NULL | 关联订单号 |
 | amount | DECIMAL(12,2) NOT NULL | |
 | status | VARCHAR(20) NOT NULL | PENDING / SUCCESS / FAILED |
 | paid_at | TIMESTAMP | |
 | created_at | TIMESTAMP NOT NULL | |
+| updated_at | TIMESTAMP NOT NULL | |
 
-### notification 模块
+### ntf_notification_task
 
-Stage 1 无表，`NotificationService.sendOrderConfirmation()` 仅日志输出模拟通知。
+| 列 | 类型 | 说明 |
+|----|------|------|
+| id | BIGSERIAL PK | |
+| order_no | VARCHAR(32) NOT NULL | 对应订单号 |
+| channel | VARCHAR(32) NOT NULL | 通知渠道 |
+| status | VARCHAR(20) NOT NULL | PENDING / PROCESSING / SUCCESS / FAILED |
+| retry_count | INT NOT NULL DEFAULT 0 | 已重试次数 |
+| next_retry_at | TIMESTAMP | 下次重试时间 |
+| last_error | VARCHAR(500) | 最近一次失败原因 |
+| created_at | TIMESTAMP NOT NULL | |
+| updated_at | TIMESTAMP NOT NULL | |
+
+说明：
+- 建议对 `(order_no, channel)` 建唯一约束，防止重复创建同类通知任务
+- 任务领取时建议使用 `FOR UPDATE SKIP LOCKED` 或等价的原子状态更新方式
 
 ---
 
 ## REST API
 
-```
+```text
+GET    /api/inventory/{productId}           查询商品信息和库存
+
 POST   /api/orders                          创建订单
 GET    /api/orders/{orderNo}                查询订单详情
-GET    /api/orders                          订单列表（简单分页）
+GET    /api/orders                          订单列表（分页）
 
-POST   /api/payments/{orderNo}/confirm      确认支付（模拟支付回调）
+POST   /api/payments/{orderNo}/confirm      确认支付
 
-GET    /api/inventory/{productId}           查询商品信息和库存（调试用）
+GET    /actuator/health                     健康检查
+GET    /actuator/metrics                    指标入口
 ```
-
-### 创建订单
-
-请求：
-```json
-{
-  "items": [
-    { "productId": 1001, "quantity": 2 },
-    { "productId": 1002, "quantity": 1 }
-  ]
-}
-```
-
-响应（订单状态为 CREATED，等待支付）：
-```json
-{
-  "code": 200,
-  "data": {
-    "orderNo": "ORD20260309001",
-    "totalAmount": 347.00,
-    "status": "CREATED",
-    "items": [
-      {
-        "productId": 1001,
-        "productName": "机械键盘",
-        "quantity": 2,
-        "unitPrice": 99.00
-      },
-      {
-        "productId": 1002,
-        "productName": "鼠标垫",
-        "quantity": 1,
-        "unitPrice": 149.00
-      }
-    ]
-  }
-}
-```
-
-### 确认支付
-
-请求：
-```
-POST /api/payments/ORD20260309001/confirm
-```
-
-响应：
-```json
-{
-  "code": 200,
-  "data": {
-    "orderNo": "ORD20260309001",
-    "amount": 347.00,
-    "status": "SUCCESS"
-  }
-}
-```
-
-支付确认后，订单状态从 `CREATED` 变为 `PAID`，同时触发通知（日志模拟）。
 
 ---
 
-## 核心业务流程（Stage 1 全同步）
+## 最小工程基线
 
-### 创建订单
+### 统一响应与异常翻译
 
-```
-POST /api/orders
-  → OrderService.createOrder()
-    → 遍历 items:
-      → InventoryService.getProductInfo()     // 查商品信息和价格
-      → InventoryService.checkStock()          // 检查库存
-    → InventoryService.deductStock()           // 扣减库存
-    → 保存 Order + OrderItems                  // 写订单（状态 CREATED）
-    → PaymentService.createPayment()           // 创建支付记录（状态 PENDING）
-    → 返回 OrderResponse
-```
+- Controller 统一返回 `ApiResponse<T>`
+- 业务异常统一抛 `BusinessException`
+- `mall-common` 提供 `GlobalExceptionHandler`
 
-### 确认支付
+### 参数校验
 
-```
-POST /api/payments/{orderNo}/confirm
-  → PaymentController（mall-app 模块，只做入参出参转换）
-    → PaymentFacade.confirmPayment()           // mall-app 模块，@Transactional，编排跨模块用例
-      → paymentService.confirmPayment(orderNo)            // 更新支付状态为 SUCCESS
-      → orderService.markAsPaid(orderNo)                   // 更新订单状态为 PAID
-      → notificationService.sendOrderConfirmation(orderNo) // 日志模拟通知
-      → 返回 PaymentResult
-```
+- DTO 使用 `jakarta.validation`
+- Controller 统一使用 `@Valid`
+- 至少覆盖空值、数量非法、商品列表为空等基础规则
 
-两个流程各自在独立的数据库事务内完成。PaymentFacade 持有事务边界，保证支付状态和订单状态在同一事务内更新。
+### 线程池与调度
 
----
+至少定义这些执行器 / 调度器：
+- `notificationExecutor`
+- `taskScannerScheduler`
+- `backgroundJobExecutor`
 
-## 模块间接口设计
+注释中要说明：
+- 这个执行器或调度器服务于哪类任务
+- 为什么不能复用同一个无边界线程池
 
-```java
-// mall-inventory 模块
-public interface InventoryService {
-    ProductInfo getProductInfo(Long productId);
-    boolean checkStock(Long productId, int quantity);
-    void deductStock(Long productId, int quantity);
-}
+### 通知任务调度
 
-// mall-payment 模块
-public interface PaymentService {
-    PaymentResult createPayment(String orderNo, BigDecimal amount);
-    PaymentResult confirmPayment(String orderNo);
-}
+- `mall-notification` 提供任务扫描入口
+- 只扫描 `status in (PENDING, FAILED)` 且 `next_retry_at <= now()` 的任务
+- 任务领取必须考虑多实例重复领取问题
+- 当前优先使用数据库行锁或等价的原子状态更新解决
 
-// mall-notification 模块
-public interface NotificationService {
-    void sendOrderConfirmation(String orderNo);
-}
+### 稳定性
 
-// mall-order 模块（供 mall-payment 回调时更新订单状态）
-public interface OrderService {
-    OrderResponse createOrder(CreateOrderRequest request);
-    OrderResponse getOrder(String orderNo);
-    void markAsPaid(String orderNo);
-}
-```
+稳定性能力优先放在外部适配层：
+- 超时
+- 重试
+- 熔断
+- 限流
 
-注意：确认支付需要同时操作支付记录、订单状态和通知，涉及跨模块调用。如果把编排逻辑放在 mall-payment 模块，就会产生 mall-payment → mall-order 的循环依赖。
+注释中要说明：
+- 哪些操作属于核心写链路，不能随便重试
+- 哪些操作属于附属流程，适合做失败兜底
 
-**解决方式**：在 mall-app 模块中引入 `PaymentFacade`（应用服务），负责编排"确认支付"这个跨模块用例。
+### 可观测性
 
-- **PaymentFacade**（mall-app 模块）：注入 PaymentService、OrderService、NotificationService，持有 `@Transactional`，编排确认支付流程
-- **PaymentController**（mall-app 模块）：只做 HTTP 入参出参转换，调用 PaymentFacade
-- **PaymentService**（mall-payment 模块）：只负责支付记录的 CRUD，不反向调用其他模块
-
-这样的分层：
-- Controller 不承担业务逻辑和事务管理
-- Facade 负责跨模块编排和事务边界
-- 各模块 Service 只负责自己领域内的操作
-
-最终模块职责：
-- mall-payment 模块：PaymentEntity、PaymentRepository、PaymentService（纯支付记录操作）
-- mall-app 模块：PaymentFacade（跨模块编排 + 事务）、PaymentController（HTTP 入口）
+至少补齐：
+- 结构化日志
+- `orderNo` / `productId` / `taskId` 等关键业务键
+- `/actuator/health`
+- Micrometer 指标入口
 
 ---
 
-## 基础设施
-
-### Docker Compose
-
-`mall-app/docker-compose.yml`，Stage 1 只启动 PostgreSQL 17：
-
-```yaml
-services:
-  postgres:
-    image: postgres:17
-    container_name: mall-postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: mall
-      POSTGRES_USER: mall
-      POSTGRES_PASSWORD: mall123
-    volumes:
-      - mall-pgdata:/var/lib/postgresql/data
-
-volumes:
-  mall-pgdata:
-```
-
-后续阶段按需添加 Redis、Kafka 等。
-
-### Flyway 迁移脚本
-
-```
-mall-app/src/main/resources/db/migration/
-  V1__create_prd_product.sql
-  V2__create_inv_inventory.sql
-  V3__create_ord_tables.sql
-  V4__create_pay_payment.sql
-  V5__seed_test_data.sql          # 插入几条测试商品和库存数据
-```
-
-### 技术栈基线
-
-- JDK 21, Spring Boot 3.5.11, Maven 3.9.x
-- PostgreSQL 17, Spring Data JPA + Hibernate, Flyway
-- Docker / Docker Compose 管理外部依赖
-
----
-
-## Stage 1 的边界
-
-**Stage 1 只演示 happy path（成功链路）。**
-
-以下场景明确不在 Stage 1 处理范围内：
-- 未支付订单的超时关闭和库存释放（当前创建订单时直接扣库存，如果不支付，库存不会自动恢复）
-- 并发控制（库存超卖留给后续阶段）
-- 异步处理
-- 缓存
-- 认证授权
-- 复杂订单状态机（当前只有 CREATED → PAID 两个状态流转）
-- 全局错误码体系
-
----
-
-## 验证方式
+## 测试与验证
 
 ### 手动验证
 
-1. `cd mall-app && docker compose up -d` 启动 PostgreSQL
-2. 项目根目录 `mvn clean package -DskipTests` 编译通过
-3. `mvn spring-boot:run -pl mall-app` 启动应用
-4. `curl localhost:8080/api/inventory/1001` 能查到测试商品
-5. `curl -X POST localhost:8080/api/orders -H 'Content-Type: application/json' -d '{"items":[{"productId":1001,"quantity":2}]}'` 创建订单成功，状态为 CREATED
-6. `curl -X POST localhost:8080/api/payments/ORD.../confirm` 确认支付
-7. `curl localhost:8080/api/orders/{orderNo}` 查到订单状态为 PAID
-8. 应用日志中能看到 notification 模块的通知输出
+1. `cd mall-app && docker compose up -d`
+2. 启动应用
+3. 访问 `/actuator/health`，确认应用和数据库可用
+4. 查询商品，验证缓存读路径正常
+5. 创建订单，验证订单和支付记录创建成功
+6. 确认支付，验证订单状态更新成功
+7. 检查通知任务创建、执行和重试状态
+8. 检查日志与指标是否可见
 
 ### 自动化验证
 
-mall-app 模块中保留一个集成级 smoke test（`@SpringBootTest` + TestRestTemplate），覆盖主链路：
-1. 查询商品库存
+至少保留一个集成级 smoke test，覆盖：
+1. 查询商品
 2. 创建订单
 3. 确认支付
-4. 查询订单，验证状态为 PAID
+4. 校验订单状态
+5. 校验通知任务状态或通知结果
 
-**测试数据库策略：**
-- Stage 1 测试复用本地 Docker Compose 提供的 PostgreSQL，通过 `test` profile 指向独立的测试数据库（`mall_test`）
-- Docker Compose 中通过 init script 同时创建 `mall` 和 `mall_test` 两个数据库
-- 后续如需 CI 环境再考虑 Testcontainers
+### 测试数据库策略
+
+- 测试默认复用本地 Docker Compose 提供的基础设施
+- PostgreSQL 使用独立测试数据库 `mall_test`
+- 后续如果进入 CI，再补 `Testcontainers`
+
+---
+
+## 当前明确不放进这个 PRD 的内容
+
+- Kafka / 消息队列
+- 通用事件总线 / `outbox`
+- 微服务拆分
+- 服务注册发现
+- API 网关
+- 跨服务分布式事务
+- 配置中心
+- 认证授权体系
+- 完整的运营后台和前端页面
+
+这些内容不是不重要，而是不应污染当前这个“Spring Boot 模块化单体主实验”的边界。
