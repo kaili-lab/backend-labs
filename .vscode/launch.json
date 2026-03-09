@@ -3,35 +3,11 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Debug: stage-00",
+      "name": "Debug: mall-app",
       "request": "attach",
       "hostName": "localhost",
       "port": 5004,
-      "preLaunchTask": "Maven: debug stage-00"
-    },
-    {
-      "type": "java",
-      "name": "Debug: stage-01",
-      "request": "attach",
-      "hostName": "localhost",
-      "port": 5005,
-      "preLaunchTask": "Maven: debug stage-01"
-    },
-    {
-      "type": "java",
-      "name": "Debug: stage-02",
-      "request": "attach",
-      "hostName": "localhost",
-      "port": 5007,
-      "preLaunchTask": "Maven: debug stage-02"
-    },
-    {
-      "type": "java",
-      "name": "Debug: stage-03",
-      "request": "attach",
-      "hostName": "localhost",
-      "port": 5008,
-      "preLaunchTask": "Maven: debug stage-03"
+      "preLaunchTask": "Maven: debug mall-app"
     },
     {
       "type": "java",

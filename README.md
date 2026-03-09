@@ -26,18 +26,22 @@
 backend-labs/
 ├── AGENTS.md
 ├── 项目记忆.md
+├── 领域知识整理方法论.md
 ├── README.md
 ├── 学习路径.md
 ├── docs/
+│   ├── ai-application/
 │   ├── roadmap/
 │   ├── capability-map/
 │   └── java-topics/
 ├── labs/
-│   ├── web-server-scaling/
-│   │   ├── README.md
-│   │   ├── stage-00/
-│   │   ├── stage-01/
-│   │   └── ...
+│   ├── web-server-scaling/     # 模块化单体商城项目
+│   │   ├── mall-app/
+│   │   ├── mall-order/
+│   │   ├── mall-inventory/
+│   │   ├── mall-payment/
+│   │   ├── mall-notification/
+│   │   └── mall-common/
 │   └── independent-demos/
 └── references/
 ```
@@ -45,11 +49,13 @@ backend-labs/
 ## 各部分作用
 
 - `项目记忆.md`：记录项目长期记忆，包括目标、结构原则、当前决定和路线
+- `领域知识整理方法论.md`：记录可迁移到其他领域的通用知识整理框架
 - `学习路径.md`：记录建议学习顺序
+- `docs/ai-application/`：记录 AI 应用开发方向的初始判断和后续整理入口
 - `docs/roadmap/`：记录系统从简单到复杂的演化主线
 - `docs/capability-map/`：记录后端工程能力的高层地图
 - `docs/java-topics/`：记录你围绕专题整理的知识文档
-- `labs/web-server-scaling/`：主实验项目，按阶段演示系统演化
+- `labs/web-server-scaling/`：主实验项目，模块化单体商城，配合演进线逐步迭代
 - `labs/independent-demos/`：独立的小型实验，用来观察某个局部机制
 - `references/`：你过去整理的知识体系与检查清单，作为后续专题整理时的参考材料
 
@@ -109,5 +115,7 @@ backend-labs/
 
 ## 当前建议
 
-如果你在建立后端全景认知，建议先读 `docs/java-topics/后端开发核心原则.md`，再读 `docs/capability-map/后端工程能力地图.md`。
-然后回到 `docs/roadmap/服务扩展演进路线.md` 推进主线，再围绕当前 stage 真实涉及的专题，到 `docs/java-topics/` 下整理知识结构与思考。
+如果你想理解这个项目背后的通用整理方法，先读 `领域知识整理方法论.md`。
+如果你在建立后端全景认知，建议再读 `docs/java-topics/后端开发核心原则.md` 和 `docs/capability-map/后端工程能力地图.md`。
+如果你准备开始整理 AI 应用开发方向，可以先读 `docs/ai-application/AI应用开发方向判断.md`、`docs/ai-application/AI应用开发核心原则.md`、`docs/ai-application/AI应用开发能力地图.md` 和 `docs/ai-application/AI应用开发演进线.md`。
+然后回到 `docs/roadmap/` 推进主线，再围绕当前演进阶段真实涉及的专题，到 `docs/java-topics/` 下整理知识结构与思考。
