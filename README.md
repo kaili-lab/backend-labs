@@ -30,7 +30,6 @@ backend-labs/
 ├── README.md
 ├── 学习路径.md
 ├── docs/
-│   ├── ai-application/
 │   ├── roadmap/
 │   ├── capability-map/
 │   └── java-topics/
@@ -47,7 +46,6 @@ backend-labs/
 - `项目记忆.md`：记录项目长期记忆，包括目标、结构原则、当前决定和路线
 - `领域知识整理方法论.md`：记录可迁移到其他领域的通用知识整理框架
 - `学习路径.md`：记录建议学习顺序
-- `docs/ai-application/`：记录 AI 应用开发方向的初始判断和后续整理入口
 - `docs/roadmap/`：记录系统从简单到复杂的演化主线
 - `docs/capability-map/`：记录后端工程能力的高层地图
 - `docs/java-topics/`：记录你围绕专题整理的知识文档
@@ -113,5 +111,4 @@ backend-labs/
 
 如果你想理解这个项目背后的通用整理方法，先读 `领域知识整理方法论.md`。
 如果你在建立后端全景认知，建议再读 `docs/java-topics/后端开发核心原则.md` 和 `docs/capability-map/后端工程能力地图.md`。
-如果你准备开始整理 AI 应用开发方向，可以先读 `docs/ai-application/AI应用开发方向判断.md`、`docs/ai-application/AI应用开发核心原则.md`、`docs/ai-application/AI应用开发能力地图.md` 和 `docs/ai-application/AI应用开发演进线.md`。
 然后回到 `docs/roadmap/` 推进主线，再围绕当前演进阶段真实涉及的专题，到 `docs/java-topics/` 下整理知识结构与思考。
