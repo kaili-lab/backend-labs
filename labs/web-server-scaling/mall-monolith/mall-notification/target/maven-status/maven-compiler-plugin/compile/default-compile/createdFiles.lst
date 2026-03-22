@@ -1,0 +1,5 @@
+lab\backend\mall\notification\domain\model\NotificationTask.class
+lab\backend\mall\notification\application\NotificationSender.class
+lab\backend\mall\notification\application\NotificationTaskService.class
+lab\backend\mall\notification\domain\repository\NotificationTaskRepository.class
+lab\backend\mall\notification\application\dto\ClaimedNotificationTask.class

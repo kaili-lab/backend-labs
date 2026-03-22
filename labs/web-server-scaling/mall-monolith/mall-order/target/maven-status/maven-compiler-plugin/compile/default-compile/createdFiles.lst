@@ -1,0 +1,7 @@
+lab\backend\mall\order\application\OrderCommandService.class
+lab\backend\mall\order\domain\model\Order.class
+lab\backend\mall\order\domain\repository\OrderRepository.class
+lab\backend\mall\order\domain\model\OrderItem.class
+lab\backend\mall\order\application\dto\OrderCreatedResult.class
+lab\backend\mall\order\domain\repository\OrderItemRepository.class
+lab\backend\mall\order\application\dto\OrderDraft.class

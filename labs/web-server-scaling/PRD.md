@@ -99,6 +99,12 @@
 - 代码实现可以按依赖关系推进
 - 但不再把能力拆成多个 stage 项目分别实现
 
+### 和实施切片的关系
+
+- `docs/slices/` 负责定义 `V1 ~ V4` 的训练路线与实施切片
+- 当前 `V1 ~ V4` 只覆盖 `mall-monolith/`
+- `mall-microservices/` 的实施切片在单体四个切片稳定后再单独规划
+
 ---
 
 ## 原演进阶段与当前主实验的映射
@@ -197,6 +203,11 @@
 web-server-scaling/
 ├── README.md
 ├── PRD.md
+├── docs/
+│   ├── README.md
+│   ├── slices/
+│   ├── designs/
+│   └── execution/
 ├── mall-monolith/              # 当前这个 PRD 描述的 Spring Boot 单体项目
 │   ├── pom.xml
 │   ├── mall-common/
@@ -226,6 +237,12 @@ mall-monolith/mall-app/
 └── docker/
     └── postgres/init/
 ```
+
+补充说明：
+
+- `docs/slices/`：定义单体阶段的 `V1 ~ V4` 训练切片，只回答“先做什么、后做什么、每个阶段引入什么压力”
+- `docs/designs/`：存放当前切片需要单独说明的关键方案设计，不为每个小功能都创建文档
+- `docs/execution/`：存放真正开始编码前的执行清单与批次记录
 
 ---
 

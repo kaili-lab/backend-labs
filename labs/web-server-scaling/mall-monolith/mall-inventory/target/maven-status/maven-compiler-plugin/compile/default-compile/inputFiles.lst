@@ -1,0 +1,10 @@
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-inventory\src\main\java\lab\backend\mall\inventory\application\dto\ProductInventoryView.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-inventory\src\main\java\lab\backend\mall\inventory\application\dto\SellableProductSnapshot.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-inventory\src\main\java\lab\backend\mall\inventory\application\InventoryCommandService.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-inventory\src\main\java\lab\backend\mall\inventory\application\InventoryQueryService.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-inventory\src\main\java\lab\backend\mall\inventory\domain\model\Category.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-inventory\src\main\java\lab\backend\mall\inventory\domain\model\Inventory.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-inventory\src\main\java\lab\backend\mall\inventory\domain\model\Product.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-inventory\src\main\java\lab\backend\mall\inventory\domain\repository\CategoryRepository.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-inventory\src\main\java\lab\backend\mall\inventory\domain\repository\InventoryRepository.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-inventory\src\main\java\lab\backend\mall\inventory\domain\repository\ProductRepository.java

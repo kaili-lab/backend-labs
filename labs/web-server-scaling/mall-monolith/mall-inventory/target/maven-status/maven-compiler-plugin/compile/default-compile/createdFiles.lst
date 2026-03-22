@@ -1,0 +1,10 @@
+lab\backend\mall\inventory\application\InventoryCommandService.class
+lab\backend\mall\inventory\domain\repository\CategoryRepository.class
+lab\backend\mall\inventory\application\dto\ProductInventoryView.class
+lab\backend\mall\inventory\application\dto\SellableProductSnapshot.class
+lab\backend\mall\inventory\domain\model\Category.class
+lab\backend\mall\inventory\application\InventoryQueryService.class
+lab\backend\mall\inventory\domain\repository\InventoryRepository.class
+lab\backend\mall\inventory\domain\repository\ProductRepository.class
+lab\backend\mall\inventory\domain\model\Inventory.class
+lab\backend\mall\inventory\domain\model\Product.class

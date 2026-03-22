@@ -1,0 +1,7 @@
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-order\src\main\java\lab\backend\mall\order\application\dto\OrderCreatedResult.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-order\src\main\java\lab\backend\mall\order\application\dto\OrderDraft.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-order\src\main\java\lab\backend\mall\order\application\OrderCommandService.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-order\src\main\java\lab\backend\mall\order\domain\model\Order.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-order\src\main\java\lab\backend\mall\order\domain\model\OrderItem.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-order\src\main\java\lab\backend\mall\order\domain\repository\OrderItemRepository.java
+D:\fullstack\backend-labs\labs\web-server-scaling\mall-monolith\mall-order\src\main\java\lab\backend\mall\order\domain\repository\OrderRepository.java

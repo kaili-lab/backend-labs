@@ -1,0 +1,4 @@
+lab\backend\mall\payment\domain\model\Payment.class
+lab\backend\mall\payment\domain\repository\PaymentRepository.class
+lab\backend\mall\payment\application\dto\PaymentInitResult.class
+lab\backend\mall\payment\application\PaymentCommandService.class
